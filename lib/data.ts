@@ -82,6 +82,37 @@ export const examinationHistory = [
   { id: 'ex-1014', date: '14 Oct 2026', patient: 'Grace Okafor', age: 55, notes: 'Hypertension check' },
 ]
 
+export type ScanStatus = 'awaiting' | 'completed' | 'referred'
+
+export interface ScanRow {
+  id: string
+  date: string
+  patient: string
+  age: number
+  eyes: 'Both' | 'Right' | 'Left'
+  status: ScanStatus
+}
+
+export const scans: ScanRow[] = [
+  { id: 'ex-1105', date: '2026-11-05', patient: 'Amina Musa', age: 48, eyes: 'Both', status: 'awaiting' },
+  { id: 'ex-1104', date: '2026-11-05', patient: 'Ibrahim Sani', age: 57, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1103', date: '2026-11-05', patient: 'Chioma Eze', age: 39, eyes: 'Right', status: 'completed' },
+  { id: 'ex-1102', date: '2026-11-04', patient: 'Yusuf Abdullahi', age: 66, eyes: 'Both', status: 'referred' },
+  { id: 'ex-1101', date: '2026-11-04', patient: 'Funke Adeyemi', age: 51, eyes: 'Left', status: 'awaiting' },
+  { id: 'ex-1099', date: '2026-11-03', patient: 'Emeka Nwosu', age: 44, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1097', date: '2026-11-03', patient: 'Hauwa Garba', age: 60, eyes: 'Both', status: 'referred' },
+  { id: 'ex-1094', date: '2026-11-02', patient: 'Segun Ojo', age: 35, eyes: 'Right', status: 'completed' },
+  { id: 'ex-1090', date: '2026-11-01', patient: 'Zainab Lawal', age: 72, eyes: 'Both', status: 'awaiting' },
+  { id: 'ex-1086', date: '2026-10-31', patient: 'Peter Okon', age: 58, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1081', date: '2026-10-30', patient: 'Maryam Bello', age: 47, eyes: 'Left', status: 'referred' },
+  { id: 'ex-1077', date: '2026-10-29', patient: 'Daniel Akpan', age: 63, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1072', date: '2026-10-28', patient: 'Aisha Umar', age: 41, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1068', date: '2026-10-27', patient: 'Kelechi Obi', age: 54, eyes: 'Right', status: 'awaiting' },
+  { id: 'ex-1061', date: '2026-10-25', patient: 'Ngozi Udeh', age: 69, eyes: 'Both', status: 'referred' },
+  { id: 'ex-1055', date: '2026-10-24', patient: 'Tunde Bello', age: 62, eyes: 'Both', status: 'completed' },
+  { id: 'ex-1049', date: '2026-10-22', patient: 'Grace Okafor', age: 55, eyes: 'Both', status: 'completed' },
+]
+
 export const weeklyScreenings = [
   { day: 'Mon', screenings: 18, referrals: 4 },
   { day: 'Tue', screenings: 26, referrals: 7 },
