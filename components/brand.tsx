@@ -10,7 +10,7 @@ export function BrandMark({ className }: { className?: string }) {
           alt="Eagle Eye logo"
           fill
           sizes="44px"
-          className="object-cover object-[50%_25%] scale-125"
+          className="origin-[52%_5%] scale-[1.6] object-cover object-top"
         />
       </div>
       <div className="leading-tight">
