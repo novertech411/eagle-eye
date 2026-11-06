@@ -1,12 +1,13 @@
 import { MobileNav, Sidebar } from '@/components/app-shell/nav'
+import { TopNav } from '@/components/app-shell/top-bar'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-surface md:p-4">
-      <div className="mx-auto flex max-w-[1440px] gap-4 md:rounded-[2rem] md:bg-background md:p-4">
-        <Sidebar />
-        <main className="min-w-0 flex-1 px-4 pt-5 pb-28 md:px-2 md:pt-2 md:pb-4">{children}</main>
-      </div>
+    <div className="min-h-dvh bg-background">
+      <Sidebar />
+      <TopNav />
+      {/* Offsets match the fixed sidebar (w-64) and top nav (h-16). */}
+      <main className="px-4 pt-22 pb-28 md:ml-64 md:px-8 md:pb-8">{children}</main>
       <MobileNav />
     </div>
   )

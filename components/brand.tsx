@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils'
 export function BrandMark({ className }: { className?: string }) {
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-border">
+      <div className="relative h-11 w-[88px] shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-border">
         <Image
           src="/images/eagle-eye-logo.jpg"
           alt="Eagle Eye logo"
           fill
-          sizes="44px"
-          className="origin-[52%_5%] scale-[1.6] object-cover object-top"
+          sizes="88px"
+          className="object-contain p-1"
         />
       </div>
       <div className="leading-tight">

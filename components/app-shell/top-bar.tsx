@@ -1,44 +1,20 @@
-import { Bell, Search } from 'lucide-react'
 import { BrandMark } from '@/components/brand'
+
+export function TopNav() {
+  return (
+    <header className="fixed top-0 right-0 left-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-white px-4 md:left-64 md:justify-end md:px-8">
+      <BrandMark className="md:hidden" />
+      {/* <p className="hidden text-sm font-medium italic text-primary lg:block">Your Eye Care Squad</p> */}
+    </header>
+  )
+}
 
 export function TopBar({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <BrandMark />
-        <div className="flex items-center gap-3">
-          <p className="hidden text-sm font-medium italic text-primary lg:block">
-            Your Eye Care Squad
-          </p>
-          <div className="relative hidden sm:block">
-            <label htmlFor="global-search" className="sr-only">
-              Search patients
-            </label>
-            <input
-              id="global-search"
-              type="search"
-              placeholder="Search..."
-              className="h-10 w-56 rounded-full border border-border bg-white pr-11 pl-4 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/40"
-            />
-            <span className="absolute top-1 right-1 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Search className="size-4" aria-hidden="true" />
-            </span>
-          </div>
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative flex size-10 items-center justify-center rounded-full bg-white text-foreground ring-1 ring-border"
-          >
-            <Bell className="size-4" aria-hidden="true" />
-            <span className="absolute top-2 right-2.5 size-2 rounded-full bg-highlight" />
-          </button>
-        </div>
-      </div>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-balance md:text-3xl">{title}</h1>
-        {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
-      </div>
-    </header>
+    <div>
+      <h1 className="text-2xl font-bold tracking-tight text-balance md:text-3xl">{title}</h1>
+      {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
+    </div>
   )
 }
 

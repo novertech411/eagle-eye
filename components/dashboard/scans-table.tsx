@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,48 +14,72 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { ScanRow, ScanStatus } from '@/lib/data'
+import { formatDate } from '@/lib/format'
+import type { ScanRow, ScanStatus } from '@/lib/supabase/queries'
 import { cn } from '@/lib/utils'
 
-const PAGE_SIZE = 8
+const PAGE_SIZE = 10
+const SEARCH_DELAY_MS = 300
 
 const statusStyles: Record<ScanStatus, { label: string; className: string }> = {
+  draft: { label: 'Draft', className: 'bg-muted text-muted-foreground ring-border' },
   awaiting: { label: 'Awaiting Review', className: 'bg-amber-50 text-amber-700 ring-amber-200' },
+  analyzed: { label: 'Analyzed', className: 'bg-amber-50 text-amber-700 ring-amber-200' },
   completed: { label: 'Completed', className: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
   referred: { label: 'Referred', className: 'bg-accent text-primary ring-primary/20' },
 }
 
-const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-})
+function dashboardUrl(query: string, page: number, newestFirst: boolean) {
+  const params = new URLSearchParams()
+  if (query.trim()) params.set('q', query.trim())
+  if (page > 1) params.set('page', String(page))
+  if (!newestFirst) params.set('sort', 'oldest')
+  const search = params.toString()
+  return search ? `/dashboard?${search}` : '/dashboard'
+}
 
-export function ScansTable({ scans }: { scans: ScanRow[] }) {
-  const [query, setQuery] = useState('')
-  const [newestFirst, setNewestFirst] = useState(true)
-  const [page, setPage] = useState(1)
+export function ScansTable({
+  rows,
+  total,
+  page,
+  pageCount,
+  query,
+  newestFirst,
+}: {
+  rows: ScanRow[]
+  total: number
+  page: number
+  pageCount: number
+  query: string
+  newestFirst: boolean
+}) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [search, setSearch] = useState(query)
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return scans
-      .filter((s) => s.patient.toLowerCase().includes(q))
-      .sort((a, b) => (newestFirst ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)))
-  }, [scans, query, newestFirst])
+  const navigate = (url: string) => startTransition(() => router.replace(url, { scroll: false }))
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const currentPage = Math.min(page, pageCount)
-  const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
-  const firstRow = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
-  const lastRow = Math.min(currentPage * PAGE_SIZE, filtered.length)
+  useEffect(() => {
+    if (search.trim() === query.trim()) return
+    const timer = setTimeout(() => navigate(dashboardUrl(search, 1, newestFirst)), SEARCH_DELAY_MS)
+    return () => clearTimeout(timer)
+    // Only a change to the search text should schedule a new search.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
+
+  const firstRow = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const lastRow = Math.min(page * PAGE_SIZE, total)
 
   return (
-    <section className="rounded-2xl border border-border bg-card text-card-foreground">
+    <section
+      aria-busy={isPending}
+      className="rounded-2xl border border-border bg-card text-card-foreground"
+    >
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between md:p-5">
         <h2 className="text-base font-semibold">All scans</h2>
         <div className="relative w-full sm:w-72">
           <label htmlFor="scan-search" className="sr-only">
-            Search patients by name
+            Search patients by name or phone
           </label>
           <Search
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -63,12 +88,9 @@ export function ScansTable({ scans }: { scans: ScanRow[] }) {
           <Input
             id="scan-search"
             type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setPage(1)
-            }}
-            placeholder="Search patient name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name or phone..."
             className="h-10 rounded-xl bg-white pl-9 text-base md:text-sm"
           />
         </div>
@@ -80,7 +102,7 @@ export function ScansTable({ scans }: { scans: ScanRow[] }) {
             <TableHead className="pl-4 md:pl-5">
               <button
                 type="button"
-                onClick={() => setNewestFirst((v) => !v)}
+                onClick={() => navigate(dashboardUrl(query, 1, !newestFirst))}
                 className="inline-flex items-center gap-1 font-medium hover:text-foreground"
                 aria-label={`Sort by date, currently ${newestFirst ? 'newest first' : 'oldest first'}`}
               >
@@ -112,11 +134,11 @@ export function ScansTable({ scans }: { scans: ScanRow[] }) {
               return (
                 <TableRow key={scan.id}>
                   <TableCell className="pl-4 text-muted-foreground md:pl-5">
-                    {dateFormatter.format(new Date(scan.date))}
+                    {formatDate(scan.createdAt)}
                   </TableCell>
                   <TableCell className="font-medium">{scan.patient}</TableCell>
                   <TableCell>{scan.age}</TableCell>
-                  <TableCell>{scan.eyes}</TableCell>
+                  <TableCell>{scan.eyes ?? '—'}</TableCell>
                   <TableCell>
                     <span
                       className={cn(
@@ -129,7 +151,7 @@ export function ScansTable({ scans }: { scans: ScanRow[] }) {
                   </TableCell>
                   <TableCell className="pr-4 text-right md:pr-5">
                     <Link
-                      href={`/results?id=${scan.id}`}
+                      href={`/results/${scan.id}`}
                       className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-lg')}
                     >
                       View<span className="sr-only"> scan for {scan.patient}</span>
@@ -144,28 +166,28 @@ export function ScansTable({ scans }: { scans: ScanRow[] }) {
 
       <div className="flex items-center justify-between gap-3 border-t border-border p-4 text-sm md:px-5">
         <p className="text-muted-foreground">
-          Showing {firstRow}–{lastRow} of {filtered.length}
+          Showing {firstRow}–{lastRow} of {total}
         </p>
         <nav className="flex items-center gap-2" aria-label="Pagination">
           <Button
             variant="outline"
             size="icon-sm"
             className="rounded-lg"
-            onClick={() => setPage(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => navigate(dashboardUrl(query, page - 1, newestFirst))}
+            disabled={page === 1}
             aria-label="Previous page"
           >
             <ChevronLeft aria-hidden="true" />
           </Button>
           <span className="min-w-16 text-center text-muted-foreground">
-            Page {currentPage} of {pageCount}
+            Page {page} of {pageCount}
           </span>
           <Button
             variant="outline"
             size="icon-sm"
             className="rounded-lg"
-            onClick={() => setPage(currentPage + 1)}
-            disabled={currentPage === pageCount}
+            onClick={() => navigate(dashboardUrl(query, page + 1, newestFirst))}
+            disabled={page === pageCount}
             aria-label="Next page"
           >
             <ChevronRight aria-hidden="true" />
