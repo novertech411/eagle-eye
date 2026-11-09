@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ANALYSIS_FAILED_NOTE, type CompletedAnalysis, type StoredAnalysis } from '@/lib/ai-result'
 import type { ExaminationStatus, RiskLevel } from '@/lib/supabase/types'
 import { cn } from '@/lib/utils'
+import { withBasePath } from '@/lib/base-path'
 
 const POLL_INTERVAL_MS = 3000
 const MAX_WAIT_MS = 5 * 60 * 1000
@@ -20,7 +21,7 @@ const riskStyles: Record<RiskLevel, { label: string; className: string }> = {
 }
 
 function requestAnalysis(examinationId: string) {
-  return fetch('/api/analyze', {
+  return fetch(withBasePath('/api/analyze'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ examinationId }),

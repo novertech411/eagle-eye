@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
+import { withBasePath } from '@/lib/base-path'
 
 const DOWNLOAD_ERROR = "Couldn't generate the report. Please try again."
 
@@ -22,7 +23,7 @@ export function DownloadReportButton({
     setLoading(true)
     onError(null)
     try {
-      const response = await fetch(`/api/report/${examinationId}`)
+      const response = await fetch(withBasePath(`/api/report/${examinationId}`))
       if (!response.ok) {
         onError(
           response.status === 401

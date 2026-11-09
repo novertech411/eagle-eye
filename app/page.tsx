@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { LoginForm } from '@/components/login/login-form'
+import { withBasePath } from '@/lib/base-path'
 
 export default function LoginPage() {
   return (
@@ -14,7 +15,7 @@ export default function LoginPage() {
           aria-hidden="true"
         />
         <Image
-          src="/images/fundus-right.png"
+          src={withBasePath('/images/fundus-right.png')}
           alt=""
           width={600}
           height={600}
@@ -25,7 +26,7 @@ export default function LoginPage() {
         <div className="relative flex max-w-sm flex-col items-center text-center">
           <div className="rounded-3xl bg-white p-6 shadow-2xl shadow-black/20">
             <Image
-              src="/images/eagle-eye-logo.jpg"
+              src={withBasePath('/images/eagle-eye-logo.jpg')}
               alt="Eagle Eye"
               width={1600}
               height={820}
@@ -43,7 +44,7 @@ export default function LoginPage() {
       <section className="flex flex-col items-center justify-center px-6 py-12 sm:px-12">
         <div className="flex w-full max-w-sm flex-col">
           <Image
-            src="/images/eagle-eye-logo.jpg"
+            src={withBasePath('/images/eagle-eye-logo.jpg')}
             alt="Eagle Eye"
             width={1600}
             height={820}

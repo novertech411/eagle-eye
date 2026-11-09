@@ -39,11 +39,15 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  // A signed-in user has no reason to see the login page.
-  const target = !user && isProtected(pathname) ? '/login' : user && pathname === '/login' ? '/dashboard' : null
+  // The login page is the app's root. A signed-in user has no reason to see it.
+  const target = !user && isProtected(pathname) ? '/' : user && pathname === '/' ? '/dashboard' : null
 
   if (target) {
-    const redirect = NextResponse.redirect(new URL(target, request.url))
+    // nextUrl leaves out the base path, and adds it back when the URL is built.
+    const url = request.nextUrl.clone()
+    url.pathname = target
+    url.search = ''
+    const redirect = NextResponse.redirect(url)
     // Keep any cookie changes, such as clearing a session that is no longer valid.
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
     Object.entries(cacheHeaders).forEach(([key, value]) => redirect.headers.set(key, value))

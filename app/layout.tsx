@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { withBasePath } from '@/lib/base-path'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   description:
     'Eagle Lense helps clinicians capture, review and report retinal eye screenings. Your Eye Care Squad.',
   generator: 'v0.app',
-  icons: { icon: '/icon.png', apple: '/apple-icon.png' },
+  icons: { icon: withBasePath('/icon.png'), apple: withBasePath('/apple-icon.png') },
 }
 
 export const viewport: Viewport = {

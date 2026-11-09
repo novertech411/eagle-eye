@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Loader2, ScanEye, FileText, LogOut, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { withBasePath } from '@/lib/base-path'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -36,7 +37,7 @@ function useSignOut() {
       await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined)
     }
     // A full page load also clears any patient data held in the client.
-    window.location.assign('/login')
+    window.location.assign(withBasePath('/'))
   }
 
   return { signingOut, signOut }
@@ -90,7 +91,7 @@ export function Sidebar() {
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white px-4">
         <div className="relative h-12 w-20 shrink-0">
           <Image
-            src="/images/egleicon.jpeg"
+            src={withBasePath('/images/egleicon.jpeg')}
             alt="Eagle Eye logo"
             fill
             priority
