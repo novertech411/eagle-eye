@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/')
+  if (!user) redirect('/login')
 
   const fullName: unknown = user.user_metadata?.full_name
   const profile = [

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'Eagle Lense helps clinicians capture, review and report retinal eye screenings. Your Eye Care Squad.',
   generator: 'v0.app',
+  icons: { icon: '/icon.png', apple: '/apple-icon.png' },
 }
 
 export const viewport: Viewport = {

@@ -36,7 +36,7 @@ function useSignOut() {
       await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined)
     }
     // A full page load also clears any patient data held in the client.
-    window.location.assign('/')
+    window.location.assign('/login')
   }
 
   return { signingOut, signOut }
@@ -86,18 +86,19 @@ export function Sidebar() {
   const pathname = usePathname()
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex">
-      <div className="bg-white px-5 py-4">
-        <div className="relative aspect-[2/1] w-full">
+      {/* h-16 matches the top nav. */}
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white px-4">
+        <div className="relative h-12 w-20 shrink-0">
           <Image
-            src="/images/eagle-eye-logo.jpg"
+            src="/images/egleicon.jpeg"
             alt="Eagle Eye logo"
             fill
             priority
-            sizes="216px"
+            sizes="80px"
             className="object-contain mix-blend-multiply"
           />
         </div>
-        <div className="mt-2 text-center leading-tight">
+        <div className="leading-tight">
           <p className="text-sm font-extrabold tracking-wide text-foreground">EAGLE LENSE</p>
           <p className="text-[11px] text-muted-foreground">by Eagle Eye Tech Ltd</p>
         </div>

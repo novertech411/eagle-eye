@@ -38,8 +38,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user && isProtected(request.nextUrl.pathname)) {
-    const redirect = NextResponse.redirect(new URL('/', request.url))
+  const { pathname } = request.nextUrl
+  // A signed-in user has no reason to see the login page.
+  const target = !user && isProtected(pathname) ? '/login' : user && pathname === '/login' ? '/dashboard' : null
+
+  if (target) {
+    const redirect = NextResponse.redirect(new URL(target, request.url))
     // Keep any cookie changes, such as clearing a session that is no longer valid.
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
     Object.entries(cacheHeaders).forEach(([key, value]) => redirect.headers.set(key, value))
