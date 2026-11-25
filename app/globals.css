@@ -483,26 +483,36 @@
 
 .clinic-login-photo { display: none; object-fit: cover; object-position: 62% center; }
 .clinic-login-brand .sidebar-brand { position: relative; padding: 0; }
-.clinic-login-summary { display: none; font: 600 30px/1.2 var(--font-poppins), sans-serif; letter-spacing: -.025em; }
+.clinic-login-brand .sidebar-brand img { width: 40px; height: 40px; }
+.clinic-login-summary { display: none; }
+.clinic-login-summary h2 { font: 600 clamp(28px, 2.9vw, 46px)/1.12 var(--font-poppins), sans-serif; letter-spacing: -.025em; text-wrap: balance; }
+.clinic-login-summary p { margin-top: 16px; max-width: 46ch; font-size: 16px; line-height: 1.6; color: rgb(255 255 255 / 86%); }
 .clinic-login-card { display: grid; align-self: center; justify-self: center; gap: 28px; width: min(100%, 464px); padding: 24px; }
 
 @media (min-width: 48rem) {
   .clinic-main { margin-left: var(--sidebar-width); padding: 100px 40px 48px; }
-  .clinic-login { grid-template-columns: minmax(248px, 1fr) minmax(0, 1.65fr); align-content: stretch; gap: 40px; padding: 24px; }
-  .clinic-login-brand { justify-content: space-between; padding: 32px; }
+  .clinic-login { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: stretch; gap: 0; padding: 0; }
+  .clinic-login-brand { justify-content: space-between; border-radius: 0; padding: 32px; }
   .clinic-login-photo { display: block; }
   .clinic-login-brand::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(180deg, rgb(26 20 38 / 78%), transparent 32%, transparent 60%, rgb(26 20 38 / 82%));
+    /* Light at the top so the purple logo reads, brand purple below for the white copy. */
+    background:
+      linear-gradient(180deg, rgb(247 246 250 / 94%) 0, rgb(247 246 250 / 74%) 96px, rgb(247 246 250 / 0%) 230px),
+      linear-gradient(0deg, rgb(43 16 78 / 92%) 0, rgb(50 18 88 / 78%) 190px, rgb(61 22 105 / 0%) 400px),
+      rgb(106 40 168 / 6%);
     pointer-events: none;
   }
   .clinic-login-brand > :is(.sidebar-brand, .clinic-login-summary) { position: relative; z-index: 2; }
-  .clinic-login-brand .sidebar-brand span { color: white; }
-  .clinic-login-summary { display: block; max-width: 16ch; }
-  .clinic-login-card { padding: 36px; }
+  .clinic-login-brand .sidebar-brand img { width: 60px; height: 40px; border-radius: 0; background: none; box-shadow: none; object-fit: cover; }
+  .clinic-login-brand .sidebar-brand p { color: var(--clinic-sidebar); }
+  .clinic-login-brand .sidebar-brand span { color: #4a4358; }
+  .clinic-login-summary { display: block; }
+  .clinic-login-summary h2 { max-width: 14ch; }
+  .clinic-login-card { width: min(100% - 48px, 464px); margin-block: 24px; padding: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

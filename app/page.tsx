@@ -10,25 +10,29 @@ export default function LoginPage() {
           src={withBasePath("/images/eagle-lens-1600.webp")}
           alt=""
           fill
-          sizes="(min-width: 768px) 40vw, 0px"
+          sizes="(min-width: 768px) 50vw, 0px"
           className="clinic-login-photo"
         />
         <div className="sidebar-brand">
           <Image
             src={withBasePath("/icon.png")}
             alt=""
-            width={40}
-            height={40}
+            width={64}
+            height={64}
             priority
           />
           <div>
-            <p>Eagel eye</p>
-            <span>by Eagle Eye Tech Ltd</span>
+            <p>EAGLE LENSE</p>
           </div>
         </div>
-        <p className="clinic-login-summary">
-          Retinal screening for your clinic
-        </p>
+        <div className="clinic-login-summary">
+          <h2>See the signs before sight is lost.</h2>
+          {/* <p>
+            Photograph the retina with a smartphone, screen for glaucoma or
+            diabetic retinopathy with AI, and leave every patient with a clear
+            next step.
+          </p> */}
+        </div>
       </aside>
 
       <section
