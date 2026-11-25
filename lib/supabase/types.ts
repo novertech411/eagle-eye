@@ -1,4 +1,4 @@
-// Mirrors supabase/migrations/001_initial_schema.sql.
+// Mirrors supabase/migrations/001_initial_schema.sql and later migrations.
 // Columns without a NOT NULL constraint are nullable, even when they have a default.
 
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined }
@@ -7,6 +7,7 @@ export type ExaminationStatus = 'draft' | 'submitted' | 'analyzed' | 'finalized'
 export type EyeLabel = 'right' | 'left'
 export type QualityStatus = 'pending' | 'suitable' | 'insufficient'
 export type RiskLevel = 'low' | 'moderate' | 'high' | 'inconclusive'
+export type ScreeningDisease = 'glaucoma' | 'diabetic_retinopathy'
 
 export interface Patient {
   id: string
@@ -23,6 +24,7 @@ export interface Examination {
   symptoms: string | null
   consent: boolean
   status: ExaminationStatus
+  disease: ScreeningDisease
   created_by: string
   created_at: string | null
 }

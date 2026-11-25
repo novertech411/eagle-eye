@@ -6,10 +6,11 @@ import {
   type ProcessingAnalysis,
   type RetinalAnalysis,
 } from '@/lib/ai-result'
-import { analyzeRetinalImage, ANALYSIS_MODEL } from '@/lib/claude'
+import { DEFAULT_DISEASE, isScreeningDisease } from '@/lib/diseases'
+import { inferenceModel, screenRetinalImage } from '@/lib/inference'
 import { getExamination, latestImage, type ExaminationDetails } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/server'
-import type { Json, EyeLabel, RetinalImage } from '@/lib/supabase/types'
+import type { Json, EyeLabel, RetinalImage, ScreeningDisease } from '@/lib/supabase/types'
 
 export const maxDuration = 300
 
@@ -22,7 +23,7 @@ function json(status: number, body: Record<string, unknown>) {
   return NextResponse.json(body, { status })
 }
 
-// Claims the examination so only one paid analysis runs at a time. Each write only
+// Claims the examination so only one analysis runs at a time. Each write only
 // succeeds if the row is still in the state read below, so simultaneous requests can't both win.
 async function claimAnalysis(supabase: Supabase, examination: ExaminationDetails) {
   const claim: ProcessingAnalysis = { state: 'processing', started_at: new Date().toISOString() }
@@ -57,7 +58,11 @@ async function claimAnalysis(supabase: Supabase, examination: ExaminationDetails
   return data.length > 0
 }
 
-async function analyzeImage(supabase: Supabase, image: RetinalImage): Promise<RetinalAnalysis> {
+async function analyzeImage(
+  supabase: Supabase,
+  image: RetinalImage,
+  disease: ScreeningDisease,
+): Promise<RetinalAnalysis> {
   const { data, error } = await supabase.storage
     .from('retinal-images')
     .download(image.storage_path)
@@ -65,8 +70,7 @@ async function analyzeImage(supabase: Supabase, image: RetinalImage): Promise<Re
     console.error(`Downloading the ${image.eye} eye image failed:`, error.message)
     return failedAnalysis()
   }
-  const base64 = Buffer.from(await data.arrayBuffer()).toString('base64')
-  return analyzeRetinalImage(base64, image.eye)
+  return screenRetinalImage(await data.arrayBuffer(), image.eye, disease)
 }
 
 export async function POST(request: Request) {
@@ -104,12 +108,15 @@ export async function POST(request: Request) {
       return json(202, { status: 'processing' })
     }
 
-    const analyses = await Promise.all(images.map((image) => analyzeImage(supabase, image)))
+    const disease = isScreeningDisease(examination.disease) ? examination.disease : DEFAULT_DISEASE
+    const analyses = await Promise.all(
+      images.map((image) => analyzeImage(supabase, image, disease)),
+    )
     const eyes: Partial<Record<EyeLabel, RetinalAnalysis>> = {}
     images.forEach((image, index) => {
       eyes[image.eye] = analyses[index]
     })
-    const result = combineAnalyses(eyes, ANALYSIS_MODEL)
+    const result = combineAnalyses(eyes, inferenceModel(disease))
 
     // A report finalized during the analysis stays exactly as the clinician signed it.
     const { data: saved, error: saveError } = await supabase

@@ -25,9 +25,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { extractVideoFrames, imageFileToJpeg } from '@/lib/capture-images'
+import { DEFAULT_DISEASE, DISEASES } from '@/lib/diseases'
 import { createClient } from '@/lib/supabase/client'
 import { containsPattern, quoteFilterValue } from '@/lib/supabase/search'
-import type { EyeLabel as Eye, Patient } from '@/lib/supabase/types'
+import type { EyeLabel as Eye, Patient, ScreeningDisease } from '@/lib/supabase/types'
 import { cn } from '@/lib/utils'
 
 type PatientMatch = Pick<Patient, 'id' | 'name' | 'age' | 'phone'>
@@ -275,6 +276,7 @@ export function ExaminationForm() {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [consent, setConsent] = useState(false)
+  const [disease, setDisease] = useState<ScreeningDisease>(DEFAULT_DISEASE)
 
   const [activeEye, setActiveEye] = useState<Eye>('right')
   const [captures, setCaptures] = useState<Partial<Record<Eye, CapturedImage>>>({})
@@ -482,6 +484,7 @@ export function ExaminationForm() {
           phone,
           symptoms: notes,
           consent,
+          disease,
         })
         if ('error' in draft) {
           setSubmitError(draft.error)
@@ -669,6 +672,39 @@ export function ExaminationForm() {
                 className="min-h-24 rounded-xl bg-white text-base md:text-sm"
               />
             </div>
+            <fieldset className="flex flex-col gap-2 sm:col-span-2">
+              <legend className="mb-2 text-sm font-medium">
+                Screen for
+                <Required />
+              </legend>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {DISEASES.map((d) => (
+                  <label
+                    key={d.value}
+                    className={cn(
+                      'flex cursor-pointer flex-col rounded-xl border px-4 py-3 text-sm transition has-focus-visible:ring-2 has-focus-visible:ring-ring',
+                      disease === d.value
+                        ? 'border-primary bg-white text-primary shadow-sm'
+                        : 'border-border bg-white/60 text-muted-foreground',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="disease"
+                      value={d.value}
+                      checked={disease === d.value}
+                      onChange={() => setDisease(d.value)}
+                      className="sr-only"
+                    />
+                    <span className="flex items-center gap-1.5 font-medium">
+                      {d.label}
+                      {disease === d.value ? <Check className="size-3.5" aria-hidden="true" /> : null}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{d.description}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <div className="flex items-start gap-3 rounded-xl bg-accent/60 p-4 sm:col-span-2">
               <Checkbox
                 id="consent"

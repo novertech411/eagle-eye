@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { isScreeningDisease } from '@/lib/diseases'
 import { createClient } from '@/lib/supabase/server'
+import type { ScreeningDisease } from '@/lib/supabase/types'
 
 export interface DraftExaminationInput {
   patientId: string | null
@@ -11,6 +13,7 @@ export interface DraftExaminationInput {
   phone: string
   symptoms: string
   consent: boolean
+  disease: ScreeningDisease
 }
 
 const SAVE_ERROR = "Couldn't save the examination. Please try again."
@@ -30,6 +33,7 @@ export async function createDraftExamination(
     return { error: 'Enter an age between 0 and 120.' }
   }
   if (input.consent !== true) return { error: 'Patient consent is required.' }
+  if (!isScreeningDisease(input.disease)) return { error: 'Choose a disease to screen for.' }
 
   const supabase = await createClient()
   const {
@@ -67,6 +71,7 @@ export async function createDraftExamination(
       patient_id: patientId,
       symptoms,
       consent: true,
+      disease: input.disease,
       status: 'draft',
       created_by: user.id,
     })
