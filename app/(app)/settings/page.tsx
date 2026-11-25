@@ -18,7 +18,7 @@ export default async function SettingsPage() {
   ]
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-7">
       <TopBar title="Settings" />
       <Panel title="Profile" className="max-w-xl">
         <dl className="flex flex-col gap-4 text-sm">

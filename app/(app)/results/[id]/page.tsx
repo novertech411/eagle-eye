@@ -42,7 +42,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
   ])
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-7">
       <TopBar title="Results & Report" />
 
       <Panel className="!py-4">
@@ -50,7 +50,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           <dl className="contents">
             <div className="flex gap-1.5">
               <dt className="text-muted-foreground">Patient:</dt>
-              <dd className="font-semibold">{patient.name}</dd>
+              <dd className="break-all font-semibold">{patient.name}</dd>
             </div>
             <span className="hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
             <div className="flex gap-1.5">
@@ -84,7 +84,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
         ) : null}
       </Panel>
 
-      <div className="grid gap-5 xl:grid-cols-12">
+      <div className="grid gap-7 xl:grid-cols-12">
         <Panel title="Retinal images" className="xl:col-span-7">
           <div className="grid gap-4 sm:grid-cols-2">
             {eyeSlots.map(({ eye, label }) => {
@@ -92,7 +92,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
               const url = image ? imageUrls.get(image.storage_path) : undefined
               return (
                 <figure key={eye} className="overflow-hidden rounded-2xl ring-1 ring-border">
-                  <figcaption className="bg-gradient-to-r from-primary to-violet-500 px-4 py-2 text-sm font-semibold text-white">
+                  <figcaption className="bg-[var(--clinic-sidebar)] px-4 py-2 text-sm font-semibold text-white">
                     {label}
                   </figcaption>
                   <div className="relative flex aspect-square items-center justify-center bg-black">
@@ -129,7 +129,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           </div>
         </Panel>
 
-        <div className="flex flex-col gap-5 xl:col-span-5">
+        <div className="flex min-w-0 flex-col gap-7 xl:col-span-5">
           <Panel>
             <AiResultPanel
               examinationId={examination.id}
@@ -153,7 +153,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           <p className="text-sm text-muted-foreground">No other examinations for this patient.</p>
         ) : (
           <div className="overflow-x-auto">
-            <Table className="min-w-[520px]">
+            <Table className="clinic-history min-w-[520px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>

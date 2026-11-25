@@ -1,10 +1,12 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 import { withBasePath } from '@/lib/base-path'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+
+const poppins = Poppins({ subsets: ['latin'], weight: '600', variable: '--font-poppins' })
 
 export const metadata: Metadata = {
   title: 'Eagle Lense — Retinal Screening by Eagle Eye Tech',
@@ -33,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

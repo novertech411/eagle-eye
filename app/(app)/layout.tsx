@@ -1,13 +1,21 @@
 import { MobileNav, Sidebar } from '@/components/app-shell/nav'
-import { TopNav } from '@/components/app-shell/top-bar'
+import { TopNav } from '@/components/app-shell/top-nav'
+import { createClient } from '@/lib/supabase/server'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const fullName = user?.user_metadata.full_name
+  const name = typeof fullName === 'string' ? fullName.trim() : ''
+  const email = user?.email ?? ''
+
   return (
-    <div className="min-h-dvh bg-background">
-      <Sidebar />
+    <div className="clinic-shell clinic-theme min-h-dvh">
+      <Sidebar name={name} email={email} />
       <TopNav />
-      {/* Offsets match the fixed sidebar (w-64) and top nav (h-16). */}
-      <main className="px-4 pt-22 pb-28 md:ml-64 md:px-8 md:pb-8">{children}</main>
+      <main className="clinic-main">
+        <div className="clinic-content">{children}</div>
+      </main>
       <MobileNav />
     </div>
   )

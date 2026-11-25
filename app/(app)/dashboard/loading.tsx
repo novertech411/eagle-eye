@@ -1,45 +1,59 @@
-import { TopBar } from '@/components/app-shell/top-bar'
 import { Skeleton } from '@/components/ui/skeleton'
-
-const STAT_COUNT = 4
-const ROW_COUNT = 6
 
 export default function DashboardLoading() {
   return (
-    <div className="flex flex-col gap-6">
-      <TopBar title="Dashboard" subtitle="Overview of retinal scans across your clinic." />
-      <p className="sr-only" role="status">
-        Loading dashboard…
-      </p>
-
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
-        <div className="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4">
-          {Array.from({ length: STAT_COUNT }, (_, index) => (
-            <div key={index} className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-              <Skeleton className="h-9 w-14" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          ))}
+    <div className="clinic-dashboard">
+      <p className="sr-only" role="status">Loading dashboard…</p>
+      <header className="dashboard-header">
+        <div className="dashboard-heading">
+          <Skeleton className="h-[15px] w-56" />
+          <h1>Retinal screening overview</h1>
+          <p className="dashboard-description">Every scan across your clinic, analysed by Eagle Lense AI.</p>
         </div>
-        <Skeleton className="h-12 rounded-xl lg:h-auto lg:w-36" />
+        <Skeleton className="h-12 w-[139px] rounded-[12px]" />
+      </header>
+      <div className="dashboard-card dashboard-kpis">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="dashboard-kpi">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-14" />
+            <Skeleton className="h-[15px] w-20" />
+          </div>
+        ))}
       </div>
-
-      <section className="rounded-2xl border border-border bg-card">
-        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between md:p-5">
-          <Skeleton className="h-5 w-20" />
-          <Skeleton className="h-10 w-full rounded-xl sm:w-72" />
+      <div className="dashboard-card scans-card" aria-hidden="true">
+        <div className="scans-toolbar">
+          <div className="scans-toolbar-group">
+            <h2>All scans</h2>
+            <Skeleton className="h-9 w-[390px] max-w-full rounded-[10px]" />
+          </div>
+          <Skeleton className="h-[38px] w-[280px] max-w-full rounded-[10px]" />
         </div>
-        <div className="flex flex-col divide-y divide-border">
-          {Array.from({ length: ROW_COUNT }, (_, index) => (
-            <div key={index} className="flex items-center gap-6 px-4 py-3.5 md:px-5">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="hidden h-4 w-16 sm:block" />
-              <Skeleton className="h-6 w-20 rounded-full" />
+        <div className="overflow-x-auto">
+          <div className="min-w-[860px]">
+            <div className="scan-loading-row scan-loading-head">
+              {Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-3 w-10" />)}
             </div>
-          ))}
+            {Array.from({ length: 10 }, (_, index) => (
+              <div key={index} className="scan-loading-row">
+                <Skeleton className="h-8 w-20" />
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-9 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="h-4 w-6" />
+                <Skeleton className="h-6 w-18" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="ml-auto h-8 w-24" />
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+        <div className="scans-footer">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-8 w-36" />
+        </div>
+      </div>
     </div>
   )
 }

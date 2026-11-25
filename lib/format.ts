@@ -24,3 +24,18 @@ export function formatIsoDate(value: string) {
 export function formatDate(value: string | null) {
   return value ? dateFormatter.format(new Date(value)) : '—'
 }
+
+const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Africa/Lagos',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+export function formatTime(value: string) {
+  return timeFormatter.format(new Date(value))
+}
+
+export function initials(value: string) {
+  return value.trim().split(/\s+/).slice(0, 2).map((word) => Array.from(word)[0]).join('').toUpperCase()
+}

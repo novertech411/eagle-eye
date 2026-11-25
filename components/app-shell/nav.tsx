@@ -4,22 +4,21 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Loader2, ScanEye, FileText, LogOut, Settings } from 'lucide-react'
+import { LayoutDashboard, LayoutGrid, Loader2, Eye, ScanEye, FileText, LogOut, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { withBasePath } from '@/lib/base-path'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/examination', label: 'Examination', icon: ScanEye },
+import { initials } from '@/lib/format'
+
+export const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, mobileIcon: LayoutDashboard },
+  { href: '/examination', label: 'Examination', icon: Eye, mobileIcon: ScanEye },
   { href: '/results', label: 'Results', icon: FileText },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
-const sidebarItemClass =
-  'flex h-12 items-center gap-3 px-6 text-sm font-medium transition-colors'
-
-function isActive(pathname: string, href: string) {
+export function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
@@ -43,11 +42,11 @@ function useSignOut() {
   return { signingOut, signOut }
 }
 
-function SignOutIcon({ signingOut }: { signingOut: boolean }) {
+function SignOutIcon({ signingOut, size = 'size-5' }: { signingOut: boolean; size?: string }) {
   return signingOut ? (
-    <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+    <Loader2 className={cn(size, 'motion-safe:animate-spin')} aria-hidden="true" />
   ) : (
-    <LogOut className="size-5" aria-hidden="true" />
+    <LogOut className={size} aria-hidden="true" />
   )
 }
 
@@ -58,10 +57,11 @@ function SidebarSignOut() {
       type="button"
       onClick={() => void signOut()}
       disabled={signingOut}
-      className={cn(sidebarItemClass, 'w-full hover:bg-sidebar-accent hover:text-white disabled:opacity-60')}
+      aria-label={signingOut ? 'Signing out' : 'Sign out'}
+      title="Sign out"
+      className="sidebar-sign-out"
     >
-      <SignOutIcon signingOut={signingOut} />
-      Sign Out
+      <SignOutIcon signingOut={signingOut} size="size-4" />
     </button>
   )
 }
@@ -83,49 +83,37 @@ function MobileSignOut() {
   )
 }
 
-export function Sidebar() {
+export function Sidebar({ name, email }: { name: string; email: string }) {
   const pathname = usePathname()
+  const displayName = name || email
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex">
-      {/* h-16 matches the top nav. */}
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white px-4">
-        <div className="relative h-12 w-20 shrink-0">
-          <Image
-            src={withBasePath('/images/egleicon.jpeg')}
-            alt="Eagle Eye logo"
-            fill
-            priority
-            sizes="80px"
-            className="object-contain mix-blend-multiply"
-          />
-        </div>
-        <div className="leading-tight">
-          <p className="text-sm font-extrabold tracking-wide text-foreground">EAGLE LENSE</p>
-          <p className="text-[11px] text-muted-foreground">by Eagle Eye Tech Ltd</p>
+    <aside className="clinic-sidebar">
+      <div className="sidebar-brand">
+        <Image src={withBasePath('/icon.png')} alt="" width={40} height={40} />
+        <div>
+          <p>EAGLE LENSE</p>
+          <span>by Eagle Eye Tech Ltd</span>
         </div>
       </div>
-      <nav aria-label="Main" className="flex flex-1 flex-col overflow-y-auto py-4">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = isActive(pathname, href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                sidebarItemClass,
-                active
-                  ? 'bg-white text-primary'
-                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-              )}
-            >
-              <Icon className="size-5 shrink-0" aria-hidden="true" />
-              {label}
-            </Link>
-          )
-        })}
+      <nav aria-label="Main" className="sidebar-nav">
+        <p>Workspace</p>
+        {navItems.map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} aria-current={isActive(pathname, href) ? 'page' : undefined}>
+            <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+            {label}
+          </Link>
+        ))}
       </nav>
-      <div className="border-t border-sidebar-border py-2">
+      <div className="sidebar-user">
+        {displayName && (
+          <>
+            <span className="sidebar-avatar" aria-hidden="true">{initials(displayName)}</span>
+            <div className="sidebar-user-text">
+              <p className="truncate">{displayName}</p>
+              {name && email && <p className="truncate">{email}</p>}
+            </div>
+          </>
+        )}
         <SidebarSignOut />
       </div>
     </aside>
@@ -140,7 +128,8 @@ export function MobileNav() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <ul className="grid grid-cols-5">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon, mobileIcon }) => {
+          const Icon = mobileIcon ?? icon
           const active = isActive(pathname, href)
           return (
             <li key={href}>

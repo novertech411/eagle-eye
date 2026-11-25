@@ -82,32 +82,81 @@ export async function getDashboardStats() {
   }
 }
 
-export async function getScansPage(query: string, requestedPage: number, newestFirst: boolean) {
+export type ScanFilter = 'referred' | 'analysed' | 'awaiting'
+
+export function parseScanFilter(value: string): ScanFilter | undefined {
+  if (value === 'referred' || value === 'analysed' || value === 'awaiting') return value
+}
+
+const referralRiskLevels = ['moderate', 'high']
+
+function statusJoin(filter?: ScanFilter) {
+  if (filter === 'referred') return ', screening_results!inner(risk_level)'
+  return filter ? ', flagged:screening_results!left(id)' : ''
+}
+
+type ScanFilterQuery = {
+  in(column: string, values: string[]): void
+  is(column: string, value: null): void
+  eq(column: string, value: string): void
+}
+
+function applyScanFilter(query: ScanFilterQuery, filter?: ScanFilter) {
+  if (filter === 'referred') {
+    query.in('screening_results.risk_level', referralRiskLevels)
+  } else if (filter) {
+    query.eq('status', filter === 'analysed' ? 'analyzed' : 'submitted')
+    query.in('flagged.risk_level', referralRiskLevels)
+    query.is('flagged', null)
+  }
+}
+
+async function countScans(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  filter?: ScanFilter,
+  patientFilter?: string,
+) {
+  const query = supabase.from('examinations')
+    .select(`id, patients!inner(id)${statusJoin(filter)}`, { count: 'exact', head: true })
+  applyScanFilter(query, filter)
+  if (patientFilter) query.or(patientFilter, { referencedTable: 'patients' })
+  const { count, error } = await query
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+export async function getScanFilterCounts() {
+  const supabase = await createClient()
+  const [all, referred, analysed, awaiting] = await Promise.all([
+    countScans(supabase),
+    countScans(supabase, 'referred'),
+    countScans(supabase, 'analysed'),
+    countScans(supabase, 'awaiting'),
+  ])
+  return { all, referred, analysed, awaiting }
+}
+
+export async function getScansPage(query: string, requestedPage: number, newestFirst: boolean, filter?: ScanFilter) {
   const supabase = await createClient()
   const term = query.trim()
   const pattern = quoteFilterValue(containsPattern(term))
-  const patientFilter = `name.ilike.${pattern},phone.ilike.${pattern}`
+  const patientFilter = term ? `name.ilike.${pattern},phone.ilike.${pattern}` : undefined
 
-  // Count first: requesting a range past the last row is an error, so the page must be clamped.
-  let countQuery = supabase
-    .from('examinations')
-    .select('id, patients!inner(id)', { count: 'exact', head: true })
-  if (term) countQuery = countQuery.or(patientFilter, { referencedTable: 'patients' })
-  const { count, error: countError } = await countQuery
-  if (countError) throw new Error(countError.message)
-
-  const total = count ?? 0
+  // Clamp the page before requesting a range, since an out-of-range request can fail.
+  const total = await countScans(supabase, filter, patientFilter)
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const page = Math.min(requestedPage, pageCount)
   if (total === 0) return { rows: [] as ScanRow[], total, page, pageCount }
 
   const from = (page - 1) * PAGE_SIZE
-  let rowsQuery = supabase
-    .from('examinations')
-    .select(
-      'id, created_at, status, patients!inner(name, age), retinal_images(eye), screening_results(risk_level)',
-    )
-  if (term) rowsQuery = rowsQuery.or(patientFilter, { referencedTable: 'patients' })
+  const resultJoin = filter === 'referred'
+    ? statusJoin(filter)
+    : `, screening_results(risk_level)${statusJoin(filter)}`
+  const rowsQuery = supabase.from('examinations').select(
+    `id, created_at, status, patients!inner(name, age), retinal_images(eye)${resultJoin}`,
+  )
+  applyScanFilter(rowsQuery, filter)
+  if (patientFilter) rowsQuery.or(patientFilter, { referencedTable: 'patients' })
   const { data, error } = await rowsQuery
     .order('created_at', { ascending: !newestFirst })
     .order('id')

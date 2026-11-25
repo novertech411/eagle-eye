@@ -1,86 +1,119 @@
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
-import { TopBar } from '@/components/app-shell/top-bar'
-import { ScansTable } from '@/components/dashboard/scans-table'
-import { buttonVariants } from '@/components/ui/button'
-import { getDashboardStats, getScansPage } from '@/lib/supabase/queries'
-import { cn } from '@/lib/utils'
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { ScansTable } from "@/components/dashboard/scans-table";
+import {
+  getDashboardStats,
+  getScanFilterCounts,
+  getScansPage,
+  parseScanFilter,
+} from "@/lib/supabase/queries";
 
-export const metadata = { title: 'Dashboard — Eagle Lense' }
+export const metadata = { title: "Dashboard — Eagle Lense" };
 
-type SearchParams = Record<string, string | string[] | undefined>
+type SearchParams = Record<string, string | string[] | undefined>;
+
+const clinicDate = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Africa/Lagos",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
 function single(value: string | string[] | undefined) {
-  return typeof value === 'string' ? value : ''
+  return typeof value === "string" ? value : "";
 }
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>
+  searchParams: Promise<SearchParams>;
 }) {
-  const params = await searchParams
-  const query = single(params.q)
-  const requestedPage = Number.parseInt(single(params.page), 10)
-  const newestFirst = single(params.sort) !== 'oldest'
+  const params = await searchParams;
+  const query = single(params.q).trim();
+  const requestedPage = Number.parseInt(single(params.page), 10);
+  const newestFirst = single(params.sort) !== "oldest";
+  const status = parseScanFilter(single(params.status));
 
-  const [counts, scans] = await Promise.all([
+  const [counts, tabs, scans] = await Promise.all([
     getDashboardStats(),
-    getScansPage(query, requestedPage > 0 ? requestedPage : 1, newestFirst),
-  ])
+    getScanFilterCounts(),
+    getScansPage(
+      query,
+      requestedPage > 0 ? requestedPage : 1,
+      newestFirst,
+      status,
+    ),
+  ]);
 
+  const referralRate = counts.total
+    ? Math.round((100 * counts.referrals) / counts.total)
+    : 0;
   const stats = [
-    { label: 'Total Scans', value: counts.total },
-    { label: 'Awaiting Review', value: counts.awaiting },
-    { label: 'Completed Today', value: counts.completedToday },
-    { label: 'Referrals Made', value: counts.referrals },
-  ]
+    { label: "Total scans", value: counts.total, note: "All time" },
+    {
+      label: "Awaiting review",
+      value: counts.awaiting,
+      note: counts.awaiting ? "In the queue" : "Queue is clear",
+    },
+    {
+      label: "Completed today",
+      value: counts.completedToday,
+      note: "Since 00:00",
+    },
+    {
+      label: "Referrals made",
+      value: counts.referrals,
+      note: `${referralRate}% of scans`,
+    },
+  ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <TopBar title="Dashboard" subtitle="Overview of retinal scans across your clinic." />
-
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
-        <dl className="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex flex-col-reverse gap-1 rounded-2xl border border-border bg-card p-5"
-            >
-              <dt className="text-sm text-muted-foreground">{stat.label}</dt>
-              <dd className="text-3xl font-bold tracking-tight text-foreground">{stat.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <Link
-          href="/examination"
-          className={cn(
-            buttonVariants({ size: 'lg' }),
-            'h-12 gap-2 rounded-xl px-6 text-base font-semibold hover:bg-primary/90 lg:h-auto',
-          )}
-        >
-          <Plus aria-hidden="true" />
-          New Scan
+    <div className="clinic-dashboard">
+      <header className="dashboard-header">
+        <div className="dashboard-heading">
+          {/* <p className="dashboard-date">
+            {clinicDate.format(new Date()).replace(", ", " · ")}
+          </p> */}
+          <h1>Retinal screening overview</h1>
+          {/* <p className="dashboard-description">Every scan across your clinic, analysed by Eagle Lense AI.</p> */}
+        </div>
+        <Link href="/examination" className="dashboard-primary">
+          <Plus size={18} strokeWidth={2.2} aria-hidden="true" />
+          New scan
         </Link>
-      </div>
+      </header>
+
+      <dl className="dashboard-card dashboard-kpis">
+        {stats.map(({ label, value, note }) => (
+          <div key={label} className="dashboard-kpi">
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+            <dd>{note}</dd>
+          </div>
+        ))}
+      </dl>
 
       {counts.total === 0 ? (
-        <section className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-5 py-14 text-center">
-          <p className="text-base font-medium">No scans yet. Start your first examination.</p>
-          <Link href="/examination" className={cn(buttonVariants(), 'rounded-xl px-5')}>
-            Start Examination
+        <section
+          id="dashboard-empty"
+          tabIndex={-1}
+          className="dashboard-card dashboard-empty"
+        >
+          <p>No scans yet. Start your first examination.</p>
+          <Link href="/examination" className="dashboard-primary">
+            Start examination
           </Link>
         </section>
       ) : (
         <ScansTable
-          rows={scans.rows}
-          total={scans.total}
-          page={scans.page}
-          pageCount={scans.pageCount}
+          {...scans}
           query={query}
           newestFirst={newestFirst}
+          status={status}
+          counts={tabs}
         />
       )}
     </div>
-  )
+  );
 }
